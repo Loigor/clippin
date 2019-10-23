@@ -60,9 +60,9 @@ services:
     volumes:
       - ./services/analyzer:/usr/src/app
     ports:
-      - 5000:5000
+      - 8080:80
     expose:
-      - 5000
+      - 8080
     environment:
       - FLASK_ENV=development
       - FLASK_APP=api.py
