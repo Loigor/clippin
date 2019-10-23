@@ -1,13 +1,12 @@
 import * as Hapi from '@hapi/hapi'
 // create a server with a host and port
 const server: Hapi.Server = new Hapi.Server({
-  host: 'localhost',
   port: 8000
 });
 // add the route
 server.route({
   method: 'GET',
-  path: '/hello',
+  path: '/api',
   handler: function (request, h) {
     return 'hello world';
   }

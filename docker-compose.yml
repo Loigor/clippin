@@ -54,9 +54,17 @@ services:
       - FLYWAY_BASELINE_VERSION=0
       - FLYWAY_BASELINE_ON_MIGRATE=true
 
-  # analyzer:
-  #   build:
-  #     context: ./services/analyzer/DeepAudioClassification
-  #   volumes:
-  #     - ./services/analyzer/DeepAudioClassification:/deepaudio
-  #   command: python main.py test
+  analyzer:
+    build:
+      context: ./services/analyzer
+    volumes:
+      - ./services/analyzer:/usr/src/app
+    ports:
+      - 5000:5000
+    expose:
+      - 5000
+    environment:
+      - FLASK_ENV=development
+      - FLASK_APP=api.py
+      - LC_ALL=C.UTF-8
+      - LANG=C.UTF-8
