@@ -54,9 +54,9 @@ services:
       - FLYWAY_BASELINE_VERSION=0
       - FLYWAY_BASELINE_ON_MIGRATE=true
 
-  analyzer:
-    build:
-      context: ./services/analyzer/DeepAudioClassification
-    volumes:
-      - ./services/analyzer/DeepAudioClassification:/deepaudio
-    command: python main.py test
+  # analyzer:
+  #   build:
+  #     context: ./services/analyzer/DeepAudioClassification
+  #   volumes:
+  #     - ./services/analyzer/DeepAudioClassification:/deepaudio
+  #   command: python main.py test
