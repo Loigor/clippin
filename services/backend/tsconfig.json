@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "moduleResolution": "node",
+    "module": "commonjs",
+    "rootDirs": ["../"],
+    "outDir": "dist",
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "inlineSources": true,
+    "declaration": true,
+    "importHelpers": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "removeComments": false,
+    "strict": true,
+    "jsx": "react",
+    "lib": ["es6", "es2015", "dom", "es2018"]
+  },
+  "include": ["./**/*"],
+  "exclude": ["dist/**/*", "node_modules", ".npm", "docs"]
+}

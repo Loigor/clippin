@@ -1,0 +1,23 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "compile": "tsc",
+    "dev:dist": "npm run compile && node --inspect dist/index.js",
+    "dev": "nodemon -e ts --watch src/ --exec yarn run dev:dist",
+    "start": "npm run dev"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@hapi/hapi": "^18.4.0"
+  },
+  "devDependencies": {
+    "@types/hapi__hapi": "^18.2.5",
+    "@types/node": "^12.11.5",
+    "nodemon": "^1.19.4",
+    "typescript": "^3.6.4"
+  }
+}
