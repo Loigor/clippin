@@ -5,7 +5,6 @@ WORKDIR /usr/src/app
 COPY package.json .
 COPY tsconfig.json .
 COPY ./public ./public
-COPY ./src ./src
 
 RUN npm i
 EXPOSE 3000

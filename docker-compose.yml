@@ -13,22 +13,28 @@ services:
       context: ./services/backend
     volumes:
       - ./services/backend/src:/usr/src/app/src
+      - ./uploads:/usr/src/app/uploads
+      - ./exports:/usr/src/app/exports
     ports:
       - 8000:8000 # No need to expose
+    environment:
+      - CHOKIDAR_USEPOLLING=true
 
   frontend:
     build: ./services/frontend
     volumes:
-      - ./services/frontend/src:/usr/src/frontend/src
+      - ./services/frontend/src:/usr/src/app/src
     ports:
       - 3000:3000 # No need to expose
       - 35729:35729
+    environment:
+      - CHOKIDAR_USEPOLLING=true
 
   postgres:
     build:
       context: ./services/postgres
     volumes:
-      - ./data/postgres:/var/lib/postgresql
+      - ./services/postgres/data:/var/lib/postgresql
     ports:
       - 5432:5432
     expose:
@@ -59,10 +65,10 @@ services:
       context: ./services/analyzer
     volumes:
       - ./services/analyzer:/usr/src/app
+      - ./uploads:/usr/src/app/uploads
+      - ./exports:/usr/src/app/exports
     ports:
-      - 8080:80
-    expose:
-      - 8080
+      - 8080:8080
     environment:
       - FLASK_ENV=development
       - FLASK_APP=api.py
