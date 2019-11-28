@@ -1,2 +1,4 @@
 FROM nginx:alpine
-COPY ./nginx.conf /etc/nginx/conf.d/default.conf
+RUN mkdir -p /data/nginx
+RUN chown nginx: /data/nginx
+COPY ./nginx.conf /etc/nginx/nginx.conf

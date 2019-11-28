@@ -1,5 +1,5 @@
 import React from 'react';
-import WaveSurfer from 'wavesurfer';
+import WaveSurfer from 'wavesurfer.js';
 
 import { Fab } from '@material-ui/core';
 // import { useTheme } from '@material-ui/core/styles';
@@ -28,13 +28,13 @@ const HEIGHT_EXPANDED = 150;
 
 interface PlayerProps {
   src: string;
-  peaks: string;
   sample: Sample;
   id: number;
   finish?: (id: number) => void;
   multitrack?: boolean;
   solo?: boolean;
   muted?: boolean;
+  soloTrack: (sampleId: number) => void;
 }
 
 interface PlayerState {
@@ -43,25 +43,21 @@ interface PlayerState {
   playPosition: number;
   expanded: boolean;
   muted: boolean;
-  loading: boolean;
+  isSolo: boolean;
+  loading: number;
 }
 
 class AudioPlayer extends React.Component<PlayerProps, PlayerState> {
   public wavesurfer;
-  private waveformContainer;
-  private audioContainer;
   constructor(props) {
     super(props);
-    this.waveformContainer = 'waveform-' + props.id;
-    // this.waveformContainer2 = 'waveform2-' + props.id;
-    this.audioContainer = 'audio-' + props.id;
-    // this.audioContainer2 = 'audio2-' + props.id;
     this.state = {
       playing: false,
       playPosition: 0,
       expanded: false,
       muted: props.muted || false,
-      loading: true
+      isSolo: props.solo || false,
+      loading: 0
     }
   }
 
@@ -81,18 +77,11 @@ class AudioPlayer extends React.Component<PlayerProps, PlayerState> {
   expandCard = () => {
     this.setWavesurferSize(!this.state.expanded);
     this.setState({ expanded: !this.state.expanded });
-
   }
 
   componentDidMount() {
-    const aud = document.querySelector('#' + this.audioContainer);
-
     this.wavesurfer = WaveSurfer.create({
-      loading: this.state.loading,
-      barWidth: 0,
-      cursorWidth: 1,
-      container: '#' + this.waveformContainer,
-      backend: 'MediaElement',
+      container: '#wave' + this.props.id,
       height: HEIGHT_SHRINKED,
       progressColor: lightBlue[100],
       responsive: true,
@@ -100,13 +89,42 @@ class AudioPlayer extends React.Component<PlayerProps, PlayerState> {
       fillParent: true,
       cursorColor: lightBlue[600],
       hideScrollbar: true,
-      normalize: true
-    });
+      normalize: true,
+      barWidth: 0,
+      cursorWidth: 1,
+    })
 
-    this.wavesurfer.load(aud);
+    // let xhr = { cache: 'default', mode: 'cors', method: 'GET', credentials: 'same-origin', redirect: 'follow', referrer: 'client' };
+    // this.wavesurfer = WaveSurfer.create({
+    //   loading: this.state.loading,
+    //   barWidth: 0,
+    //   cursorWidth: 1,
+    //   container: waveContainer,
+    //   backend: 'MediaElement',
+    //   height: HEIGHT_SHRINKED,
+    //   progressColor: lightBlue[100],
+    //   responsive: true,
+    //   waveColor: lightBlue[400],
+    //   fillParent: true,
+    //   cursorColor: lightBlue[600],
+    //   hideScrollbar: true,
+    //   normalize: true,
+    //   xhr: xhr,
+    // });
 
+    const waveform = _.get(this.props.sample, 'metadata.analysis.waveform.data');
+    if (waveform) {
+      this.wavesurfer.load(this.props.src, waveform, 'auto');
+    } else {
+      this.wavesurfer.load(this.props.src);
+
+    }
+
+
+    // Move cursor to point
     this.wavesurfer.on('seek', (point) => {
-      this.setState({ playPosition: point })
+      if (point && point >= 0)
+        this.setState({ playPosition: point })
     })
 
     this.wavesurfer.on('play', () => {
@@ -119,6 +137,15 @@ class AudioPlayer extends React.Component<PlayerProps, PlayerState> {
       this.setState({ playing: false })
       if (this.props.finish) this.props.finish(this.props.id);
     })
+
+    // 0..100
+    this.wavesurfer.on('loading', (t) => {
+      this.setState({ loading: t })
+    })
+
+    this.wavesurfer.on('ready', () => {
+      this.setState({ loading: 100 })
+    })
     // window.addEventListener('keydown', this.handleKeyPress);
   }
 
@@ -128,9 +155,7 @@ class AudioPlayer extends React.Component<PlayerProps, PlayerState> {
   };
 
   public fastPlay = () => {
-    if (this.state.playPosition) {
-      this.wavesurfer.seekTo(Number(this.state.playPosition));
-    }
+    this.wavesurfer.seekTo(Number(this.state.playPosition));
     this.wavesurfer.play();
   }
 
@@ -140,8 +165,16 @@ class AudioPlayer extends React.Component<PlayerProps, PlayerState> {
   }
 
   public mute = (muted: boolean) => {
+    this.solo(false);
     this.wavesurfer.setMute(muted);
     this.setState({ muted });
+  }
+
+  public solo = (isSolo: boolean) => {
+    this.mute(false);
+    this.setState({ isSolo });
+    if (isSolo)
+      this.props.soloTrack(this.props.sample.id);
   }
 
   public refresh = (_) => {
@@ -156,7 +189,7 @@ class AudioPlayer extends React.Component<PlayerProps, PlayerState> {
       minHeight: 0,
       minWidth: 0,
     }
-    const { expanded, muted } = this.state;
+    const { expanded, muted, isSolo } = this.state;
     const { solo } = this.props;
     return (
       <>
@@ -170,13 +203,13 @@ class AudioPlayer extends React.Component<PlayerProps, PlayerState> {
               {this.props.multitrack &&
                 <div className="multitrack-controls" style={{ display: 'flex', flexDirection: 'column', position: 'absolute', width: '25px', left: 0, top: 0 }}>
                   <Button color="secondary" variant={muted ? 'contained' : 'outlined'} style={multitrackButtonStyle} onClick={() => this.mute(!muted)}>M</Button>
-                  <Button color="primary" variant={solo ? 'contained' : 'outlined'} style={multitrackButtonStyle} >S</Button>
+                  <Button color="primary" variant={solo ? 'contained' : 'outlined'} style={multitrackButtonStyle} onClick={() => this.solo(!isSolo)}>S</Button>
                 </div>
               }
-              <div style={{ flexBasis: expanded ? '50%' : '33.33%', overflow: 'hidden' }} onClick={(e) => { e.preventDefault() }}>
+              <div style={{ flexBasis: expanded ? '60%' : '33.33%', overflow: 'hidden', alignItems: 'flex-start' }} onClick={(e) => { e.preventDefault() }}>
 
                 <div style={{ display: 'flex' }}>
-                  <div style={{ padding: '5px', flex: 1 }}>
+                  <div style={{ padding: '5px' }}>
                     <Fab onClick={this.fastPlay} color="secondary" size={'small'} style={{ margin: '0 auto' }}>
                       <PlayCircleFilled />
                     </Fab>
@@ -185,14 +218,20 @@ class AudioPlayer extends React.Component<PlayerProps, PlayerState> {
                     <SkipPrevious onClick={this.reset} />
                   </div>
                   <div style={{ overflow: 'hidden', flex: 5, height: expanded ? HEIGHT_EXPANDED : HEIGHT_SHRINKED }}>
-                    <div
-                      className={'AudioPlayer-waveformContainer'}
-                      id={this.waveformContainer} />
-                    <audio
+                    <div id={`wave${this.props.id}`}
                       style={{ overflow: 'hidden', width: '100%', height: '100%' }}
-                      id={this.audioContainer}
-                      src={this.props.src}
                     />
+                    {/* <div
+                      style={{ overflow: 'hidden', width: '100%', height: '100%' }}
+
+                      className={'AudioPlayer-waveformContainer'}
+                      id={this.waveformContainer} /> */}
+                    {/* <>
+                      <audio
+                        id={this.audioContainer}
+                        src={this.props.src}
+                      />
+                    </> */}
                   </div>
                   <div style={{ flex: 1, textAlign: 'right', padding: '5px' }}>
                     <Fab onClick={this.playIt} color="primary" size={'small'} style={{ margin: '0 auto' }}>
@@ -202,12 +241,12 @@ class AudioPlayer extends React.Component<PlayerProps, PlayerState> {
                 </div>
 
               </div>
-              <div style={{ flexBasis: expanded ? '25%' : '33.33%', display: 'flex', alignItems: 'center', justifyContent: 'left' }}>
+              <div style={{ flexBasis: expanded ? '20%' : '33.33%', display: 'flex', alignItems: 'center', justifyContent: 'left' }}>
                 <Typography> {this.props.sample.filename}</Typography>
 
               </div>
 
-              <div onClick={() => this.expandCard()} style={{ flexBasis: expanded ? '25%' : '33.33%', marginRight: '50px', overflow: 'hidden' }}>
+              <div onClick={() => this.expandCard()} style={{ flexBasis: expanded ? '20%' : '33.33%', marginRight: '50px', overflow: 'hidden' }}>
                 <div className={'AudioPlayer-tags'} style={{ width: '100%', height: expanded ? HEIGHT_EXPANDED : HEIGHT_SHRINKED }}>
                   {this.props.sample.tags && this.props.sample.tags.map(tag => <Tag key={tag.id} label={tag.name} />)}
                 </div>

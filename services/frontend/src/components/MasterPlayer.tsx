@@ -29,6 +29,7 @@ interface PlayerProps {
 
 interface PlayerState {
   playing: boolean;
+  soloId?: number;
 }
 
 
@@ -48,7 +49,8 @@ class MasterPlayer extends React.Component<PlayerProps, PlayerState> {
   play = () => {
     if (this.props.multitrack) {
       // Play all samples  (Not optimal solution ;P)
-      this.players.map(player => _.get(player, 'current').playIt())
+      // this.players.map(player => _.get(player, 'current').playIt())
+      Object.keys(this.players).map(key => this.players[key].current.playIt())
       this.setState({ playing: true });
     }
   }
@@ -60,6 +62,11 @@ class MasterPlayer extends React.Component<PlayerProps, PlayerState> {
 
   drawerPlayClicked = () => {
     this.state.playing ? this.stop() : this.play();
+  }
+
+  soloTrack = (sampleId: number) => {
+    Object.keys(this.players).map(key => key === String(sampleId) ? this.players[key].current.solo() : this.players[key].current.mute())
+    this.setState({ soloId: sampleId })
   }
 
   render() {
@@ -76,7 +83,7 @@ class MasterPlayer extends React.Component<PlayerProps, PlayerState> {
                 key={sample.id}
                 id={sample.id}
                 src={sample.file_uri}
-                peaks={sample.waveform}
+                soloTrack={this.soloTrack}
               />
             </ListItem>
           )}

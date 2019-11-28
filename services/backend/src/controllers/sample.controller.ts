@@ -33,8 +33,8 @@ const getStorageUrl = async (sample: schema.sample): Promise<string> => {
                 console.error(err);
                 reject('gstorage err')
             }
-            const parsed = '/files/' + (url.split('/').slice(3).join('/'))
-            resolve(parsed);
+            //const parsed = '/files/' + (url.split('/').slice(3).join('/'))
+            resolve(url);
         })
     })
 

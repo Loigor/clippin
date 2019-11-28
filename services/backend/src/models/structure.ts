@@ -2,9 +2,9 @@ import * as schema from './schema';
 
 interface SampleMetadata {
   file?: File,
-  analysis?: {
+  analysis: {
     tempo: number,
-
+    waveform: JSON,
   }
 }
 
