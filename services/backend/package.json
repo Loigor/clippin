@@ -10,7 +10,7 @@
     "dev": "nodemon -e ts --watch src/ --exec yarn run dev:dist",
     "start": "npm run schemats && npm run dev"
   },
-  "author": "",
+  "author": "Taaniel Teiss (loigor@gmail.com)",
   "license": "ISC",
   "dependencies": {
     "@google-cloud/storage": "^4.1.3",

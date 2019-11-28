@@ -4,8 +4,8 @@ Audio sample and recordings management tool for producers and bands.
 
 ## Features
 * Upload samples to cloud :heavy_check_mark:
-* * Analyze sample for tempo, genre, type, band etc.
-* * Generate waveforms
+* * Analyze sample for tempo, genre, type, band etc. (tempo :heavy_check_mark:)
+* * Generate waveforms :heavy_check_mark:
 * * Suggestive tags (synth, bass, drum, 303 etc.)
 * * Merge / Version control (file checksum)
 * Play samples :heavy_check_mark:
@@ -13,15 +13,17 @@ Audio sample and recordings management tool for producers and bands.
 * * Cue play :heavy_check_mark:
 * * Assign sample play to keyboard key (current sample with enter)
 * Sample pack :heavy_check_mark:
-* * Create / Edit pack 
-* * Play sample pack recordings as multitrack (all recordings at the same time) 
-* * Mute / Solo tracks
+* * Create / Edit pack :heavy_check_mark:
+* * Upload to sample pack :heavy_check_mark:
+* * Play sample pack recordings as multitrack (all recordings at the same time :heavy_check_mark:
+* * Mute track :heavy_check_mark:
+* * Solo track
 * User management 
 * * Sharing samples & packs
 * Pick samples for test pattern (+ pattern generation)
 
 ## Services
-* gateway (nginx gw for frontend & backend)
+* gateway (nginx gw for frontend & backend and cloud storage files)
 * frontend (crapp)
 * backend (api)
 * analyzer (internal python analyzer with flask api)
