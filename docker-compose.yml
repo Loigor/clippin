@@ -7,23 +7,31 @@ services:
       context: ./services/gateway
     ports:
       - 80:80
-
+    links:  
+      - frontend
+      - backend
+      - analyzer
   backend:
     build:
       context: ./services/backend
+    depends_on:
+      - postgres
     volumes:
       - ./services/backend/src:/usr/src/app/src
       - ./uploads:/usr/src/app/uploads
       - ./exports:/usr/src/app/exports
+      #- ./gcloud-credentials.json:/usr/src/app/gcloud-credentials.json
     ports:
       - 8000:8000 # No need to expose
     environment:
       - CHOKIDAR_USEPOLLING=true
+      - GOOGLE_APPLICATION_CREDENTIALS=/gcloud-credentials.json
 
   frontend:
     build: ./services/frontend
     volumes:
       - ./services/frontend/src:/usr/src/app/src
+      - ./services/backend/src/models:/usr/src/backend/src/models
     ports:
       - 3000:3000 # No need to expose
       - 35729:35729

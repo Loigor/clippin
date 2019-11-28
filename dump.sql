@@ -30,8 +30,7 @@ CREATE TABLE public.sample (
     filename character varying,
     metadata jsonb,
     bpm real,
-    location jsonb,
-    created_at timestamp with time zone DEFAULT now()
+    location jsonb
 );
 
 
@@ -69,53 +68,6 @@ ALTER TABLE public.sample_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE public.sample_id_seq OWNED BY public.sample.id;
-
-
---
--- Name: pack; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.pack (
-    id integer NOT NULL,
-    name character varying,
-    created_at timestamp with time zone DEFAULT now()
-);
-
-
-ALTER TABLE public.pack OWNER TO postgres;
-
---
--- Name: pack_has_sample; Type: TABLE; Schema: public; Owner: postgres
---
-
-CREATE TABLE public.pack_has_sample (
-    pack_id bigint NOT NULL,
-    sample_id bigint NOT NULL
-);
-
-
-ALTER TABLE public.pack_has_sample OWNER TO postgres;
-
---
--- Name: pack_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE public.pack_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.pack_id_seq OWNER TO postgres;
-
---
--- Name: pack_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE public.pack_id_seq OWNED BY public.pack.id;
 
 
 --
@@ -161,13 +113,6 @@ ALTER TABLE ONLY public.sample ALTER COLUMN id SET DEFAULT nextval('public.sampl
 
 
 --
--- Name: pack id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.pack ALTER COLUMN id SET DEFAULT nextval('public.pack_id_seq'::regclass);
-
-
---
 -- Name: tag id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -178,7 +123,7 @@ ALTER TABLE ONLY public.tag ALTER COLUMN id SET DEFAULT nextval('public.tag_id_s
 -- Data for Name: sample; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.sample (id, md5, filename, metadata, bpm, location, created_at) FROM stdin;
+COPY public.sample (id, md5, filename, metadata, bpm, location) FROM stdin;
 \.
 
 
@@ -187,22 +132,6 @@ COPY public.sample (id, md5, filename, metadata, bpm, location, created_at) FROM
 --
 
 COPY public.sample_has_tag (sample_id, tag_id) FROM stdin;
-\.
-
-
---
--- Data for Name: pack; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.pack (id, name, created_at) FROM stdin;
-\.
-
-
---
--- Data for Name: pack_has_sample; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.pack_has_sample (pack_id, sample_id) FROM stdin;
 \.
 
 
@@ -219,13 +148,6 @@ COPY public.tag (id, name, description) FROM stdin;
 --
 
 SELECT pg_catalog.setval('public.sample_id_seq', 1, false);
-
-
---
--- Name: pack_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.pack_id_seq', 1, false);
 
 
 --
@@ -252,22 +174,6 @@ ALTER TABLE ONLY public.sample
 
 
 --
--- Name: pack_has_sample pack_has_sample_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.pack_has_sample
-    ADD CONSTRAINT pack_has_sample_pk PRIMARY KEY (pack_id, sample_id);
-
-
---
--- Name: pack pack_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.pack
-    ADD CONSTRAINT pack_pk PRIMARY KEY (id);
-
-
---
 -- Name: tag tag_pk; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -289,22 +195,6 @@ ALTER TABLE ONLY public.sample_has_tag
 
 ALTER TABLE ONLY public.sample_has_tag
     ADD CONSTRAINT sample_has_tag_fk_1 FOREIGN KEY (tag_id) REFERENCES public.tag(id);
-
-
---
--- Name: pack_has_sample pack_has_sample_fk; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.pack_has_sample
-    ADD CONSTRAINT pack_has_sample_fk FOREIGN KEY (sample_id) REFERENCES public.sample(id);
-
-
---
--- Name: pack_has_sample pack_has_sample_fk_1; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY public.pack_has_sample
-    ADD CONSTRAINT pack_has_sample_fk_1 FOREIGN KEY (pack_id) REFERENCES public.pack(id);
 
 
 --

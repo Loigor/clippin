@@ -4,6 +4,7 @@ import multer = require('multer');
 import * as bodyParser from 'body-parser'
 import serveStatic = require('serve-static');
 import * as sampleController from './controllers/sample.controller'
+import * as packController from './controllers/pack.controller'
 
 var storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -39,6 +40,11 @@ app.use('/api/v1/files/exports/', serveExports)
 app.get('/api/v1/samples', sampleController.getSamples);
 app.get('/api/v1/samples/:id', sampleController.getSamples);
 app.post('/api/v1/samples', upload.single('file'), sampleController.createSample);
+app.get('/api/v1/packs', packController.getPacks);
+app.post('/api/v1/packs', packController.createPack);
+app.get('/api/v1/packs/:id', packController.getPacks);
+app.get('/api/v1/packs/:id/samples', sampleController.getSamplesByPack);
+
 
 
 app.listen(8000, () => console.log(`Example app listening on port 8000`))
