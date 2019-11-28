@@ -1,7 +1,7 @@
 import React from 'react';
 import WaveSurfer from 'wavesurfer.js';
 
-import { Fab } from '@material-ui/core';
+import { Fab, CircularProgress } from '@material-ui/core';
 // import { useTheme } from '@material-ui/core/styles';
 
 import { PlayArrow, Stop, PlayCircleFilled, SkipPrevious } from '@material-ui/icons'
@@ -33,18 +33,17 @@ interface PlayerProps {
   finish?: (id: number) => void;
   multitrack?: boolean;
   solo?: boolean;
-  muted?: boolean;
   soloTrack: (sampleId: number) => void;
 }
 
 interface PlayerState {
   playKey?: number;
-  playing: boolean;
   playPosition: number;
   expanded: boolean;
-  muted: boolean;
   isSolo: boolean;
   loading: number;
+  playing: boolean;
+  muted: boolean;
 }
 
 class AudioPlayer extends React.Component<PlayerProps, PlayerState> {
@@ -52,12 +51,12 @@ class AudioPlayer extends React.Component<PlayerProps, PlayerState> {
   constructor(props) {
     super(props);
     this.state = {
-      playing: false,
       playPosition: 0,
       expanded: false,
-      muted: props.muted || false,
       isSolo: props.solo || false,
-      loading: 0
+      loading: 0,
+      playing: false,
+      muted: false
     }
   }
 
@@ -80,8 +79,11 @@ class AudioPlayer extends React.Component<PlayerProps, PlayerState> {
   }
 
   componentDidMount() {
+    let xhr = { cache: 'default', mode: 'cors', method: 'GET', credentials: 'same-origin', redirect: 'follow', referrer: 'client' };
+
     this.wavesurfer = WaveSurfer.create({
       container: '#wave' + this.props.id,
+      loading: this.state.loading,
       height: HEIGHT_SHRINKED,
       progressColor: lightBlue[100],
       responsive: true,
@@ -92,25 +94,8 @@ class AudioPlayer extends React.Component<PlayerProps, PlayerState> {
       normalize: true,
       barWidth: 0,
       cursorWidth: 1,
+      xhr: xhr
     })
-
-    // let xhr = { cache: 'default', mode: 'cors', method: 'GET', credentials: 'same-origin', redirect: 'follow', referrer: 'client' };
-    // this.wavesurfer = WaveSurfer.create({
-    //   loading: this.state.loading,
-    //   barWidth: 0,
-    //   cursorWidth: 1,
-    //   container: waveContainer,
-    //   backend: 'MediaElement',
-    //   height: HEIGHT_SHRINKED,
-    //   progressColor: lightBlue[100],
-    //   responsive: true,
-    //   waveColor: lightBlue[400],
-    //   fillParent: true,
-    //   cursorColor: lightBlue[600],
-    //   hideScrollbar: true,
-    //   normalize: true,
-    //   xhr: xhr,
-    // });
 
     const waveform = _.get(this.props.sample, 'metadata.analysis.waveform.data');
     if (waveform) {
@@ -120,7 +105,6 @@ class AudioPlayer extends React.Component<PlayerProps, PlayerState> {
 
     }
 
-
     // Move cursor to point
     this.wavesurfer.on('seek', (point) => {
       if (point && point >= 0)
@@ -128,13 +112,18 @@ class AudioPlayer extends React.Component<PlayerProps, PlayerState> {
     })
 
     this.wavesurfer.on('play', () => {
-      !this.state.playing && this.setState({ playing: true })
+      this.setState({ playing: true })
+    })
+    this.wavesurfer.on('mute', (mute) => {
+      this.setState({ muted: mute })
     })
     this.wavesurfer.on('pause', () => {
       this.setState({ playing: false })
+      //
     })
     this.wavesurfer.on('finish', () => {
       this.setState({ playing: false })
+      //
       if (this.props.finish) this.props.finish(this.props.id);
     })
 
@@ -150,8 +139,7 @@ class AudioPlayer extends React.Component<PlayerProps, PlayerState> {
   }
 
   public playIt = () => {
-    //this.wavesurfer.playPause();
-    this.state.playing ? this.wavesurfer.pause() : this.wavesurfer.play();
+    this.wavesurfer.playPause();
   };
 
   public fastPlay = () => {
@@ -165,16 +153,13 @@ class AudioPlayer extends React.Component<PlayerProps, PlayerState> {
   }
 
   public mute = (muted: boolean) => {
-    this.solo(false);
-    this.wavesurfer.setMute(muted);
-    this.setState({ muted });
+    if (this.wavesurfer.getMute() !== muted) {
+      this.wavesurfer.setMute(muted);
+    }
   }
 
   public solo = (isSolo: boolean) => {
-    this.mute(false);
-    this.setState({ isSolo });
-    if (isSolo)
-      this.props.soloTrack(this.props.sample.id);
+    //
   }
 
   public refresh = (_) => {
@@ -184,12 +169,13 @@ class AudioPlayer extends React.Component<PlayerProps, PlayerState> {
   render() {
     //const theme = useTheme();
     //const { classes } = this.props;
+    const { playing, muted, loading } = this.state;
     const multitrackButtonStyle = {
       padding: 0,
       minHeight: 0,
       minWidth: 0,
     }
-    const { expanded, muted, isSolo } = this.state;
+    const { expanded } = this.state;
     const { solo } = this.props;
     return (
       <>
@@ -200,19 +186,23 @@ class AudioPlayer extends React.Component<PlayerProps, PlayerState> {
               id="panel1c-header"
               style={{ height: 80, marginTop: expanded ? 50 : 0 }}
             >
+              <Typography variant="subtitle2" style={{ position: 'absolute', top: -4, marginLeft: 4 }}> {this.props.sample.filename}</Typography>
+
               {this.props.multitrack &&
                 <div className="multitrack-controls" style={{ display: 'flex', flexDirection: 'column', position: 'absolute', width: '25px', left: 0, top: 0 }}>
                   <Button color="secondary" variant={muted ? 'contained' : 'outlined'} style={multitrackButtonStyle} onClick={() => this.mute(!muted)}>M</Button>
-                  <Button color="primary" variant={solo ? 'contained' : 'outlined'} style={multitrackButtonStyle} onClick={() => this.solo(!isSolo)}>S</Button>
+                  <Button color="primary" variant={solo ? 'contained' : 'outlined'} style={multitrackButtonStyle} onClick={() => { }}>S</Button>
                 </div>
               }
               <div style={{ flexBasis: expanded ? '60%' : '33.33%', overflow: 'hidden', alignItems: 'flex-start' }} onClick={(e) => { e.preventDefault() }}>
 
                 <div style={{ display: 'flex' }}>
+
                   <div style={{ padding: '5px' }}>
-                    <Fab onClick={this.fastPlay} color="secondary" size={'small'} style={{ margin: '0 auto' }}>
-                      <PlayCircleFilled />
-                    </Fab>
+                    {loading < 100 ? <CircularProgress variant="static" color={"secondary"} value={loading} /> :
+                      <Fab onClick={this.fastPlay} color="secondary" size={'small'} style={{ margin: '0 auto' }}>
+                        <PlayCircleFilled />
+                      </Fab>}
                   </div>
                   <div>
                     <SkipPrevious onClick={this.reset} />
@@ -221,29 +211,17 @@ class AudioPlayer extends React.Component<PlayerProps, PlayerState> {
                     <div id={`wave${this.props.id}`}
                       style={{ overflow: 'hidden', width: '100%', height: '100%' }}
                     />
-                    {/* <div
-                      style={{ overflow: 'hidden', width: '100%', height: '100%' }}
-
-                      className={'AudioPlayer-waveformContainer'}
-                      id={this.waveformContainer} /> */}
-                    {/* <>
-                      <audio
-                        id={this.audioContainer}
-                        src={this.props.src}
-                      />
-                    </> */}
                   </div>
                   <div style={{ flex: 1, textAlign: 'right', padding: '5px' }}>
                     <Fab onClick={this.playIt} color="primary" size={'small'} style={{ margin: '0 auto' }}>
-                      {!this.state.playing ? <PlayArrow /> : <Stop />}
+                      {!playing ? <PlayArrow /> : <Stop />}
                     </Fab>
                   </div>
                 </div>
 
               </div>
               <div style={{ flexBasis: expanded ? '20%' : '33.33%', display: 'flex', alignItems: 'center', justifyContent: 'left' }}>
-                <Typography> {this.props.sample.filename}</Typography>
-
+                {/*  NOTHING  */}
               </div>
 
               <div onClick={() => this.expandCard()} style={{ flexBasis: expanded ? '20%' : '33.33%', marginRight: '50px', overflow: 'hidden' }}>
@@ -271,7 +249,7 @@ class AudioPlayer extends React.Component<PlayerProps, PlayerState> {
               </div>
               <div style={{ flexBasis: '33.33%' }}>
                 <Typography variant="caption">
-                  Select your destination of choice
+                  Tag editor
               <br />
 
                 </Typography>
