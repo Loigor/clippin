@@ -16,9 +16,6 @@ sampleIdx = 0
 @app.route('/analyze', methods=['GET', 'POST'])
 def analyze():
     if request.method == 'POST' and request.is_json:
-        global sampleIdx
-        sampleIdx += 1
-
         #print('FILE: ',request.form)
         # TODO: Save file to some good location
 
@@ -26,7 +23,6 @@ def analyze():
         file = data.get('file')
         path = file.get('path')
         filename = file.get('filename')
-        print("FIle: ",path)
         #tempfilename = str(sampleIdx)+'.'+ filename.rsplit('.', 1)[1]
         #tempfilelocation = os.path.join(app.config['UPLOAD_FOLDER'], tempfilename)
         #file.save(tempfilelocation)
@@ -36,8 +32,7 @@ def analyze():
         filehash = hashlib.md5(path.encode('utf-8')).hexdigest()
         #get_pitch(tempfilelocation)
         # plot = get_waveform_plot(tempfilelocation)
-       # midi = wav_to_midi(path, '/usr/src/app/exports/'+filename+'.mid')
-        sampleIdx -= 1
+        # midi = wav_to_midi(path, '/usr/src/app/exports/'+filename+'.mid')
         return {
             'tempo': round(tempo,3),
             'filename': filename,
