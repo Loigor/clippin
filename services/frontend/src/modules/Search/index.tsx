@@ -58,7 +58,7 @@ const Search: React.FC<WithSnackbarProps> = (props) => {
   const pickSamples = () => {
     if (samples) {
       const samples2 = samples;
-      const pickSamples = samples2.slice(page - 1, samplesPerPage);
+      const pickSamples = samples2.slice((page - 1) * samplesPerPage, page * samplesPerPage);
       return pickSamples;
     } else return [];
   }
