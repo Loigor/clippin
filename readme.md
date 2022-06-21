@@ -1,4 +1,4 @@
-# Clippin (or whatever)
+# Clippin
 Audio sample and recordings management tool for producers and bands. 
 
 
@@ -29,6 +29,9 @@ Audio sample and recordings management tool for producers and bands.
 * analyzer (internal python analyzer with flask api)
 * postgres 
 * flyway (psql migrations)
+
+## Database
+![Alt text](db_diagram.png?raw=true "Database diagram")
 
 ## Getting Started
 
