@@ -9,10 +9,6 @@ const Packs: React.FC<WithSnackbarProps> = (props) => {
   const [packs, setPacks] = useState();
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    fetchPacks();
-  }, [])
-
   const fetchPacks = async () => {
     setLoading(true);
     try {
@@ -23,6 +19,10 @@ const Packs: React.FC<WithSnackbarProps> = (props) => {
     }
     setLoading(false);
   }
+
+  useEffect(() => {
+    fetchPacks();
+  }, [])
 
   return (
     <Paper>

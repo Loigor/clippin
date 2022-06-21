@@ -1,3 +1,3 @@
-FROM boxfuse/flyway:5.2.4
+FROM flyway/flyway:latest
 
 COPY ./wait-for-it.sh /bin/wait-for-it.sh
